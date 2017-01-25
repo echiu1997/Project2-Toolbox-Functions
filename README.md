@@ -80,3 +80,5 @@ All of the JavaScript code is living inside the `src` directory. The main file t
 
 ## Publishing Your Code
 We highly suggest that you put your code on GitHub. One of the reasons we chose to make this course using JavaScript is that the Web is highly accessible and making your awesome work public and visible can be a huge benefit when you're looking to score a job or internship. To aid you in this process, running `npm run deploy` will automatically build your project and push it to `gh-pages` where it will be visible at `username.github.io/repo-name`.
+
+testing
