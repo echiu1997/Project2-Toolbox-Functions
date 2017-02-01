@@ -11,62 +11,42 @@ Array.prototype.contains = function(elem) {
     return false;
 }
 
+var startTime = Date.now();
+
 ///////////////////////////SLIDERS///////////////////////////////
 
 var parameterChanged = true;
 
-var CurvatureText = function() {
+var Sliders = function() {
   this.curvature = 0.5;
-};
-var curvatureText = new CurvatureText();
-
-var OrientationText = function() {
   this.orientation = 70.0;
-};
-var orientationText = new OrientationText();
-
-var SizeText = function() {
   this.size = 1.0;
-};
-var sizeText = new SizeText();
-
-var DistributionText = function() {
   this.distribution = 1.5;
+  this.turbulence = 1.0;
+  this.flapspeed = 1.0;
+  this.flapmotion = 0.5;
+  this.color = 0.9;
 };
-var distributionText = new DistributionText();
+var sliders = new Sliders();
 
-//////////////////////////MATERIALS//////////////////////////////////
+//////////////////////////MATERIALS///////////////////////////////
 
 // Basic Lambert white
 var lambertWhite = new THREE.MeshLambertMaterial({ color: 0xaaaaaa, side: THREE.DoubleSide });
 
-// create the shader material      
-var material = new THREE.ShaderMaterial( {
-    uniforms: {
-        // float initialized to 0
-        time: { type: "f", value: 0.0 },
-        // float initialized to 0
-        freq: { type: "f", value: 0.0 },
-        //float initialized to 25
-        amp: { type: "f", value: 10.0 }
-    },
-    vertexShader: require('./shaders/adam-vert.glsl'),
-    fragmentShader: require('./shaders/adam-frag.glsl'),
-} );
-
-//////////////////////////////CURVES//////////////////////////////////
+////////////////////////////CURVES//////////////////////////////////
 
 var curve1 = new THREE.CubicBezierCurve3(
     new THREE.Vector3( 0, 0, -5 ),
-    new THREE.Vector3( -2 - 2.0 * curvatureText.curvature, 0, 0 ),
-    new THREE.Vector3( 2 + 2.0 * curvatureText.curvature, 0, 0 ),
+    new THREE.Vector3( -2 - 2.0 * sliders.curvature, 0, 0 ),
+    new THREE.Vector3( 2 + 2.0 * sliders.curvature, 0, 0 ),
     new THREE.Vector3( 0, 0, 5 )
 );
 
 var curve2 = new THREE.CubicBezierCurve3(
     new THREE.Vector3( 0, 0, -5 ),
-    new THREE.Vector3( -2 - 2.0 * curvatureText.curvature, 1, 0 ),
-    new THREE.Vector3( 2 + 2.0 * curvatureText.curvature, 0.1, 0 ),
+    new THREE.Vector3( -2 - 2.0 * sliders.curvature, 1, 0 ),
+    new THREE.Vector3( 2 + 2.0 * sliders.curvature, 0.1, 0 ),
     new THREE.Vector3( 0, 0, 5 )
 );
 
@@ -84,6 +64,12 @@ function gain(g, t) {
         return 1 - bias(1.0 - g, 2.0 - 2.0*t) / 2;
     }
 }
+
+function sin(freq, x, t) {
+    return Math.sin(freq * (x+t));
+}
+
+/////////////////////////////////////////////////////////////////////
 
 // called after the scene loads
 function onLoad(framework) {
@@ -137,19 +123,35 @@ function onLoad(framework) {
     });
 
     //add curvature slider for user to adjust
-    gui.add(curvatureText, 'curvature', 0.0, 1.0).step(0.1).onChange(function(newVal) {
+    gui.add(sliders, 'curvature', 0.0, 1.0).step(0.1).onChange(function(newVal) {
         parameterChanged = true;
     });
     //add feather orientation slider for user to adjust
-    gui.add(orientationText, 'orientation', 50.0, 90.0).step(10.0).onChange(function(newVal) {
+    gui.add(sliders, 'orientation', 50.0, 90.0).step(10.0).onChange(function(newVal) {
         parameterChanged = true;
     });
     //add feather orientation slider for user to adjust
-    gui.add(sizeText, 'size', 1.0, 2.0).step(0.1).onChange(function(newVal) {
+    gui.add(sliders, 'size', 1.0, 2.0).step(0.1).onChange(function(newVal) {
         parameterChanged = true;
     });
     //add feather distribution slider for user to adjust
-    gui.add(distributionText, 'distribution', 1.0, 2.0).step(0.1).onChange(function(newVal) {
+    gui.add(sliders, 'distribution', 1.0, 2.0).step(0.1).onChange(function(newVal) {
+        parameterChanged = true;
+    });
+    //add wind turbulence slider for user to adjust
+    gui.add(sliders, 'turbulence', 0.5, 1.5).step(0.1).onChange(function(newVal) {
+        parameterChanged = true;
+    });
+    //add wind turbulence slider for user to adjust
+    gui.add(sliders, 'flapspeed', 0.5, 1.5).step(0.1).onChange(function(newVal) {
+        parameterChanged = true;
+    });
+    //add wind turbulence slider for user to adjust
+    gui.add(sliders, 'flapmotion', 0.5, 1.0).step(0.05).onChange(function(newVal) {
+        parameterChanged = true;
+    });
+    //add wind turbulence slider for user to adjust
+    gui.add(sliders, 'color', 0.3, 0.9).step(0.01).onChange(function(newVal) {
         parameterChanged = true;
     });
 }
@@ -165,18 +167,19 @@ function onUpdate(framework) {
         var objLoader = new THREE.OBJLoader();
         objLoader.load('/geo/feather.obj', function(obj) {
 
-            var curve1 = new THREE.CubicBezierCurve3(
+            curve1 = new THREE.CubicBezierCurve3(
                 new THREE.Vector3( 0, 0, -5 ),
-                new THREE.Vector3( -2 - 2.0 * curvatureText.curvature, 0, 0 ),
-                new THREE.Vector3( 2 + 2.0 * curvatureText.curvature, 0, 0 ),
+                new THREE.Vector3( -2 - 2.0 * sliders.curvature, 0, 0 ),
+                new THREE.Vector3( 2 + 2.0 * sliders.curvature, 0, 0 ),
                 new THREE.Vector3( 0, 0, 5 )
             );
 
-            var curve2 = new THREE.CubicBezierCurve3(
-                new THREE.Vector3( 0, 0, -5 ),
-                new THREE.Vector3( -2 - 2.0 * curvatureText.curvature, 1, 0 ),
-                new THREE.Vector3( 2 + 2.0 * curvatureText.curvature, 0.1, 0 ),
-                new THREE.Vector3( 0, 0, 5 )
+            curve2 = new THREE.CubicBezierCurve3(
+                new THREE.Vector3( 0, 0.1, -5 ),
+                new THREE.Vector3( -2 - 2.0 * sliders.curvature, 1, 0 ),
+                new THREE.Vector3( 2 + 2.0 * sliders.curvature, 0.1, 0 ),
+                //new THREE.Vector3( 0, sin(2, 0, (sliders.turbulence * 0.003) * (Date.now()-startTime)), 5 )
+                new THREE.Vector3( 0, 0.1, 5 )
             );
             
             // LOOK: This function runs after the obj has finished loading
@@ -187,20 +190,24 @@ function onUpdate(framework) {
                 //interpolate feather scaling base for each layer, numbers chosen myself
                 var scaleBase = 1.0 * (1.0 - layer) + 0.5 * layer;
                 //interpolate feather scaling factor (max scaling), numbers chosen myself
-                var scaleFactor = (2.0*sizeText.size) * (1.0 - layer) + (0.5*sizeText.size) * layer;
+                var scaleFactor = (2.0*sliders.size) * (1.0 - layer) + (0.5*sliders.size) * layer;
                 //interpolate feather distribution, numbers chosen myself
-                var featherDistribution = (0.05/distributionText.distribution) * (1.0 - layer) + (0.025/distributionText.distribution) * layer;
+                var featherDistribution = (0.05/sliders.distribution) * (1.0 - layer) + (0.025/sliders.distribution) * layer;
+                //interpolate feather color darkness
+                var darkness = 0.8 * (1.0 - layer) + 0.2 * layer;
 
                 for (var i = 0.0; i <= 1.0; i += featherDistribution) {
                     
-                    var featherMesh = new THREE.Mesh(featherGeo, lambertWhite);
+                    var featherMesh = new THREE.Mesh(featherGeo, new THREE.MeshLambertMaterial({ side: THREE.DoubleSide }));
+                    featherMesh.material.color.setRGB(darkness*sliders.color, darkness*sliders.color, darkness*1.0);
                     framework.scene.add(featherMesh);
+                    featherMesh.name = "feather";
 
                     var y = curve1.getPointAt(i).y * (1.0 - layer) + curve2.getPointAt(i).y * layer;
                     featherMesh.position.set(curve1.getPointAt(i).x, y, curve1.getPointAt(i).z);
 
                     featherMesh.rotateY(180.0 * Math.PI/180.0);
-                    featherMesh.rotateY(gain(0.5, i)*orientationText.orientation*Math.PI/180.0);
+                    featherMesh.rotateY(gain(0.5, i)*sliders.orientation*Math.PI/180.0);
 
                     var scalar = scaleBase + gain(0.5, i)*scaleFactor;
                     featherMesh.scale.set(scalar, scalar, scalar);
@@ -209,6 +216,7 @@ function onUpdate(framework) {
             }
 
             /*
+            //PRIOR CODE TO TEST PARAMETERS
             for (var i = 0.0; i <= 1.0; i += 0.05) {
                 var featherMesh = new THREE.Mesh(featherGeo, lambertWhite);
                 framework.scene.add(featherMesh);
@@ -247,9 +255,10 @@ function onUpdate(framework) {
             */
             
         });
-
+        
+        //remove all the previous feathers prior to slider adjustment
         framework.scene.children.forEach(function(object){
-            if( !newFeathers.contains(object.id) && object.type === "Mesh" ) {
+            if( !newFeathers.contains(object.id) && object.type == "Mesh" ) {
                 framework.scene.remove(object);
             }
         });
@@ -257,14 +266,13 @@ function onUpdate(framework) {
         parameterChanged = false;
     }
 
-    /*
-    var feather = framework.scene.getObjectByName("feather");    
-    if (feather !== undefined) {
-        // Simply flap wing
-        var date = new Date();
-        feather.rotateZ((Math.sin(date.getTime() / 100) * 2) * Math.PI / 180);        
-    }
-    */
+    //animation for wind turbulence
+    framework.scene.children.forEach(function(object){
+            if( object.name === "feather" ) {
+                object.rotateZ((0.1 * sliders.turbulence) * Math.PI/180.0 * sin(2, object.position.x, (sliders.turbulence * 0.003) * (Date.now()-startTime)));
+                object.translateY((3.0 * sliders.flapspeed) * Math.PI/180.0 * sin(sliders.flapmotion * 1.8, object.position.x, (sliders.flapspeed * 0.003) * (Date.now()-startTime)));
+            }
+    });
 }
 
 // when the scene is done initializing, it will call onLoad, then on frame updates, call onUpdate
