@@ -20,7 +20,7 @@ module.exports = {
         loader: "webpack-glsl-loader"
       },
       {
-        test: /\.(obj|bmp|jpg)$/,
+        test: /\.(bmp|jpg|obj)$/,
         loader: 'file-loader?name=./assets/[name]-[hash:6].[ext]'
       }
     ]
