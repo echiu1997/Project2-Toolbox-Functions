@@ -10,27 +10,15 @@ module.exports = {
       {
         test: /\.js$/,
         exclude: /(node_modules|bower_components)/,
-        loader: 'babel-loader',
+        loader: 'babel',
         query: {
           presets: ['es2015']
         }
       },
       {
         test: /\.glsl$/,
-        loader: "webpack-glsl-loader"
+        loader: "webpack-glsl"
       },
-      {
-        test: /\.bmp$/,
-        loader: 'file-loader?name=./assets/[name]-[hash:6].[ext]'
-      },
-      {
-        test: /\.jpg$/,
-        loader: 'file-loader?name=./assets/[name]-[hash:6].[ext]'
-      },
-      {
-        test: /\.obj$/,
-        loader: 'file-loader?name=./assets/[name]-[hash:6].[ext]'
-      }
     ]
   },
   devtool: 'source-map',
