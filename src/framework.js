@@ -1,7 +1,6 @@
 
 const THREE = require('three');
 const OrbitControls = require('three-orbit-controls')(THREE)
-const OBJLoader = require('three-obj-loader')(THREE)
 import Stats from 'stats-js'
 import DAT from 'dat-gui'
 
@@ -27,14 +26,15 @@ function init(callback, update) {
 
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
-    var renderer = new THREE.WebGLRenderer( { antialias: true } );
+    var renderer = new THREE.WebGLRenderer( { antialias: true, alpha: true } );
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(0xdddddd, 1);
+    //renderer.setClearColor(0xdddddd, 1);
 
     var controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.enableZoom = true;
+    controls.enablePan = false;
     controls.target.set(0, 0, 0);
     controls.rotateSpeed = 0.3;
     controls.zoomSpeed = 1.0;
@@ -53,6 +53,7 @@ function init(callback, update) {
     framework.scene = scene;
     framework.camera = camera;
     framework.renderer = renderer;
+    framework.controls = controls;
 
     // begin the animation loop
     (function tick() {
