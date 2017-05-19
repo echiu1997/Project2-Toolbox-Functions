@@ -33,7 +33,7 @@ function init(callback, update) {
 
     var controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
-    controls.enableZoom = true;
+    controls.enableZoom = false;
     controls.enablePan = false;
     controls.target.set(0, 0, 0);
     controls.rotateSpeed = 0.3;
