@@ -8,7 +8,7 @@ var featherMatrix = [];
 var allMeshes = new Set();
 
 var smithLoaded = new Promise((resolve, reject) => {
-    (new THREE.OBJLoader()).load(require('./assets/smith.obj'), function(obj) {
+    (new THREE.OBJLoader()).load('./geo/smith.obj', function(obj) {
         var smith = new THREE.Geometry().fromBufferGeometry(obj.children[0].geometry);
         smith.computeBoundingSphere();
         //do these 3 steps to smooth the object out
@@ -20,7 +20,7 @@ var smithLoaded = new Promise((resolve, reject) => {
 });
 
 var featherLoaded = new Promise((resolve, reject) => {
-    (new THREE.OBJLoader()).load(require('./assets/feather.obj'), function(obj) {
+    (new THREE.OBJLoader()).load('./geo/feather.obj', function(obj) {
         var feather = obj.children[0].geometry;
         feather.computeBoundingSphere();
         resolve(feather);
@@ -90,9 +90,9 @@ function onLoad(framework) {
         */
         var smithMaterial = new THREE.ShaderMaterial( {
             uniforms: {
-                normalMap: { type: "t", value: new THREE.TextureLoader().load('./assets/smithnormal.jpg') },
+                normalMap: { type: "t", value: new THREE.TextureLoader().load('./geo/smithnormal.jpg') },
                 u_useNormalMap : { type: 'i', value: true },
-                texture: { type: "t", value: new THREE.TextureLoader().load('./assets/smithtexture.bmp') },
+                texture: { type: "t", value: new THREE.TextureLoader().load('./geo/smithtexture.bmp') },
                 u_useTexture: { type: 'i', value: true },
                 u_albedo: { type: 'v3', value: new THREE.Vector3(1, 1, 1) },
                 u_ambient: { type: 'f', value: 0.2 },
@@ -149,7 +149,7 @@ function initializeFeathers(framework) {
                 uniforms: {
                     normalMap: { type: "t", value: null },
                     u_useNormalMap : { type: 'i', value: false },
-                    texture: { type: "t", value: new THREE.TextureLoader().load('./assets/feathertexture.jpg') },
+                    texture: { type: "t", value: new THREE.TextureLoader().load('./geo/feathertexture.jpg') },
                     u_useTexture: { type: 'i', value: true },
                     u_albedo: { type: 'v3', value: new THREE.Vector3(darkness, darkness, darkness) },
                     u_ambient: { type: 'f', value: 0.2 },
@@ -187,7 +187,7 @@ function initializeFeathers(framework) {
                 uniforms: {
                     normalMap: { type: "t", value: null },
                     u_useNormalMap : { type: 'i', value: false },
-                    texture: { type: "t", value: new THREE.TextureLoader().load('./assets/feathertexture.jpg') },
+                    texture: { type: "t", value: new THREE.TextureLoader().load('./geo/feathertexture.jpg') },
                     u_useTexture: { type: 'i', value: true },
                     u_albedo: { type: 'v3', value: new THREE.Vector3(darkness, darkness, darkness) },
                     u_ambient: { type: 'f', value: 0.2 },
