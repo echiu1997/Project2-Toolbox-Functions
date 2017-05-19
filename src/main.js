@@ -7,9 +7,10 @@ var featherGeo;
 var featherMatrix = [];
 var allMeshes = new Set();
 
+var smith = new THREE.Geometry();
 var smithLoaded = new Promise((resolve, reject) => {
     (new THREE.OBJLoader()).load('./geo/smith.obj', function(obj) {
-        var smith = new THREE.Geometry().fromBufferGeometry(obj.children[0].geometry);
+        smith = new THREE.Geometry().fromBufferGeometry(obj.children[0].geometry);
         smith.computeBoundingSphere();
         //do these 3 steps to smooth the object out
         smith.computeFaceNormals();
@@ -19,9 +20,10 @@ var smithLoaded = new Promise((resolve, reject) => {
     });
 });
 
+var feather = new THREE.Geometry();
 var featherLoaded = new Promise((resolve, reject) => {
     (new THREE.OBJLoader()).load('./geo/feather.obj', function(obj) {
-        var feather = obj.children[0].geometry;
+        feather = obj.children[0].geometry;
         feather.computeBoundingSphere();
         resolve(feather);
     });
@@ -81,7 +83,8 @@ function onLoad(framework) {
     controls.target.set(0, 2, -3);
 
     //add smith head to scene
-    smithLoaded.then(function(smith) {
+    //perform all these operations after all the data is loaded
+    Promise.all([smithLoaded, featherLoaded]).then(values => {   
         /*
         var smithMaterial = new THREE.MeshStandardMaterial({map: new THREE.TextureLoader().load('../assets/smithtexture.bmp')});
         smithMaterial.normalMap = new THREE.TextureLoader().load('../assets/smithnormal.jpg');
@@ -129,8 +132,10 @@ function initializeFeathers(framework) {
       framework.scene.remove(mesh);
       //framework.renderer.deallocateObject( mesh );
     }
+    
+    //perform all these operations after all the data is loaded
+    Promise.all([smithLoaded, featherLoaded]).then(values => {   
 
-    featherLoaded.then(function(feather) {   
         //initialize global variable featherGeo to feather
         featherGeo = feather; 
 
